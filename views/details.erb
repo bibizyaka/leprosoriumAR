@@ -1,26 +1,29 @@
 <h2>Post Comments</h2>
 
-<%@Comments.each do |comment| %>
+<%@comments.each do |comment| %>
 
    <div class = "wrapper" style="border-bottom:2px solid silver;"><br/>
-      <div style="font-size:18px">Post Comment <%=comment[0]%><br/><br/>
-      	<span style="margin-left:10px; font-style: italic"><%=comment[2] %></span></div><br/><br/>
-	  <div>Created at: <span style="font-weight: bold"><%=comment[3] %></span> BY: <span style="font-weight: bold;"><%=comment[1]%></span></div>
+      <div style="font-size:18px">Post Comment <%=comment.id%><br/><br/>
+      	<span style="margin-left:10px; font-style: italic"><%=comment.comment %></span></div><br/><br/>
+	  <div>Created at: <span style="font-weight: bold"><%=comment.created_at %></span> BY: <span style="font-weight: bold;"><%=comment.name%></span></div>
    </div><!-- wrapper --> 
 	  
  <%end%>
 
-<br/><hr/><br/>
+<br/><br/>
  <h3>Add New Comment</h3>
 <div class="wrapper">
-	<form method="POST" action="/details/<%=@post_id %>">
+	<form method="POST" action="/details/<%=@post_id%>">
 	  <div class="form-group">
-	    <label for="author">Your Name</label><br/>
-	    <input type="text" name="author" value="<%=@author%>" class="form-control" id="author" placeholder="Name" style="width:400px">
+	    <label for="name">Your Name</label><br/>
+	    <input type="text" name="comment[name]" value="" class="form-control" id="name" placeholder="Name" style="width:400px">
 	  </div>
 	  <div class="form-group">
 	    <label for="content">Your Comment</label>
-	   <textarea class="form-control" name="content" rows="6" style="width:400px" placeholder="Your Content..."><%=@content%></textarea>
+	   <textarea class="form-control" name="comment[comment]" rows="6" style="width:400px" placeholder="Your Content..."></textarea>
+	  </div>
+
+	    <input type="hidden" name="comment[post_id]" value="<%=@post_id%>" />
 	  </div>
 	  <button type="submit" class="btn btn-primary">Submit Comment</button>
 	</form>

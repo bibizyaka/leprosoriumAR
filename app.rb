@@ -2,117 +2,84 @@
 require 'rubygems'
 require 'sinatra'
 require 'sinatra/reloader'
-require 'SQLite3'
+require 'sinatra/activerecord'
 
-def init_db
+#connect to db syntax via active record
+set :database, "sqlite3:leprosoriumAR.db" 
 
-  @db = SQLite3::Database.new 'LeprosoriumHW.db'
-  @db_results_as_hash = true #Results will be returned as HASH and not as ARRAY
 
+class Post < ActiveRecord::Base
+  
+  has_many :comments
+  
+  validates :name, presence: true, # means field can't be empty
+            length: { minimum: 3 }
+  #or 
+  #validates :name, presence => true
+
+  validates :content, presence: true,
+             length: { minimum: 3 }
+
+end
+ 
+class Comment < ActiveRecord::Base
+   belongs_to :post
 end
 
 before do 
 
-    init_db # start function with connecting to our DB
-
-end
-
-configure do
-   
-  init_db
-  @db.execute 'CREATE TABLE IF NOT EXISTS Posts ( 
-                 Id INTEGER PRIMARY KEY AUTOINCREMENT ,
-                 Name TEXT,
-                 Content TEXT,
-                 DateTime DateTime
-    			 )'
-
-    @db.execute 'CREATE TABLE IF NOT EXISTS Comments ( 
-                 Id INTEGER PRIMARY KEY AUTOINCREMENT,
-                 Name TEXT,
-                 Content TEXT,
-                 DateTime DateTime,
-                 Post_id INTEGER
-    			 )'
-   
+   @posts = Post.all
 end
 
 get '/' do
 
-	@Posts = @db.execute 'Select * from Posts Order By Id desc'
-    if @Posts.length == 0
-       @Posts = []
-    end     
-	
-	erb :index
+    @posts = Post.order "created_at DESC"
+    erb :index
 end
 
-
-
 get '/new' do
- 
-  erb :new
 
+   @p = Post.new
+   erb :new
 end
 
 post '/new' do
 
-    @author  = params[:author]
-    @content = params[:content]
-
-    if @author.strip.size == 0
-    
-    	@error = "Provide Your Name"
-    	erb :new
-    
-    elsif @content.strip.size == 0
-    	
-    	@error = "Post Can't Be Empty"
-    	erb :new
-
-    else #input data is valid
-   
-        @db.execute 'Insert into Posts (Name,Content,DateTime) VALUES (?,?,datetime()) ',[@author,@content]
-        redirect '/'
+   @p = Post.new params[:post]
+   if @p.save
+     erb "<h2>Thank You! You are submitted!</h2>"
+    # redirect '/'
+    else 
+       @error = @p.errors.full_messages.first
+       erb :new
     end
+
 end #post new
 
 get '/details/:post_id' do
+  
+   if !(@comments = Comment.where(post_id: params[:post_id]) )
+    
+       @comments = [];
+   else
+      @comments = Comment.where(post_id: params[:post_id])  
+   end
 
    @post_id = params[:post_id]
-  @Comments = @db.execute 'Select * from Comments where post_id = ?', [@post_id]
-  
-  if @Comments.size == 0
-  
-  	@Comments = []
-  end
-
-  erb :details
+   erb :details
 
 end
 
 post '/details/:post_id' do
 
-    @post_id = params[:post_id]
-    @author  = params[:author]
-    @content = params[:content]
+   @c = Comment.new params[:comment]
+   if @c.save
+           
+      erb '<h2>Comment Added!</h2>'
+   else
+       
+      @error = @c.errors.full_messages.first
+   end #if  
 
-    if @author.strip.size == 0
-    
-       @error = "Provide Your Name"
-      # erb :details, :locals [@post_id]
-    
-    elsif @content.strip.size == 0
-    	
-       @error = "Comment Can't Be Empty"
-       #erb :details
-
-    else #input data is valid
-   
-       @db.execute 'Insert into Comments (Name,Content,DateTime, Post_id) VALUES (?,?,datetime(), ?) ',[@author,@content, @post_id]
-       redirect '/'
-   
-    end   
-
-end
+end #post details
 
