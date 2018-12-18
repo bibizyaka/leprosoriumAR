@@ -1,0 +1,11 @@
+<h2>Latest Posts...</h2>
+<br/><br/>
+<%@Posts.each do |post| %>
+
+   <div class = "wrapper" style="border-bottom:2px solid silver;">
+      <div style="font-size:18px">Post <%=post[0]%><br/><br/>
+      	<span style="margin-left:10px; font-style: italic"><%=post[2] %></span></div><br/><br/>
+	  <div>Created at: <span style="font-weight: bold"><%=post[3] %></span> BY: <span style="font-weight: bold;"><%=post[1]%></span></div><div><a href="/details/<%=post[0]%>"> Comments</a></div>
+   </div><!-- wrapper --> 
+	  
+ <%end%>
